@@ -392,6 +392,9 @@ function startServer() {
 
     // main page
     app.get(['/'], OIDCAuth, (req, res) => {
+    // Extract URL parameters
+    const queryParams = req.query;
+    console.log('URL Parameters:', queryParams); // Log URL parameters
         //log.debug('/ - hostCfg ----->', hostCfg);
         if ((!OIDC.enabled && hostCfg.protected && !hostCfg.authenticated) || authHost.isRoomActive()) {
             const ip = getIP(req);

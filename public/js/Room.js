@@ -231,8 +231,8 @@ let wbIsBgTransparent = false;
 let wbPop = [];
 let coords = {};
 
-let isButtonsVisible = false;
-let isButtonsBarOver = false;
+let isButtonsVisible = true;
+let isButtonsBarOver = true;
 
 let isRoomLocked = false;
 
@@ -300,7 +300,7 @@ function initClient() {
             'right',
         );
         setTippy('switchServerRecording', 'The recording will be stored on the server rather than locally', 'right');
-        setTippy('whiteboardGhostButton', 'Toggle transparent background', 'bottom');
+        // setTippy('whiteboardGhostButton', 'Toggle transparent background', 'bottom');
         setTippy('wbBackgroundColorEl', 'Background color', 'bottom');
         setTippy('wbDrawingColorEl', 'Drawing color', 'bottom');
         setTippy('whiteboardPencilBtn', 'Drawing mode', 'bottom');
@@ -622,7 +622,7 @@ function setupInitButtons() {
     initAudioButton.onclick = () => {
         handleAudio();
     };
-    initAudioVideoButton.onclick = async () => {
+    initAudioVideoButton.onclick = async (e) => {
         await handleAudioVideo(e);
     };
     initStartScreenButton.onclick = async () => {
@@ -911,40 +911,132 @@ async function whoAreYou() {
 
     initUser.classList.toggle('hidden');
 
-    Swal.fire({
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        background: swalBackground,
-        title: BRAND.app.name,
-        input: 'text',
-        inputPlaceholder: 'Enter your name',
-        inputAttributes: { maxlength: 32 },
-        inputValue: default_name,
-        html: initUser, // Inject HTML
-        confirmButtonText: `Join meeting`,
-        customClass: { popup: 'init-modal-size' },
-        showClass: { popup: 'animate__animated animate__fadeInDown' },
-        hideClass: { popup: 'animate__animated animate__fadeOutUp' },
-        inputValidator: (name) => {
-            if (!name) return 'Please enter your name';
-            if (name.length > 30) return 'Name must be max 30 char';
-            name = filterXSS(name);
-            if (isHtml(name)) return 'Invalid name!';
-            if (!getCookie(room_id + '_name')) {
-                window.localStorage.peer_name = name;
+    // Function to extract query parameters from the URL
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+
+    // Get the ID from the URL
+    const CU = getQueryParam('CU');
+    const IT = getQueryParam('IT');
+    const IB = getQueryParam('IB');
+
+    // Function to extract meetingId from the current URL
+    function getMeetingIdFromUrl() {
+        // Get the current URL
+        const url = window.location.href;
+        // Use a regular expression to match the meetingId from the URL
+        const match = url.match(/\/join\/([^?]+)/);
+        return match ? match[1] : null;
+    }
+
+    // Example usage
+    const MI = getMeetingIdFromUrl();
+
+    // Fetch the name from the API using the ID
+    async function fetchNameByID(id) {
+        try {
+            const response = await fetch(`https://rendezvousbackend.onrender.com/getname/${id}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-            setCookie(room_id + '_name', name, 30);
-            peer_name = name;
-        },
-    }).then(async () => {
-        if (initStream && !joinRoomWithScreen) {
-            await stopTracks(initStream);
-            elemDisplay('initVideo', false);
-            initVideoContainerShow(false);
+            const data = await response.json(); // Assuming the response is JSON
+            return data.userId; // Assuming the response has a field called 'name'
+        } catch (error) {
+            console.error('Error fetching name:', error);
+            return ''; // Default to empty string if there's an error
         }
-        getPeerInfo();
-        joinRoom(peer_name, room_id);
-    });
+    }
+
+    async function JoinMeetingApi(IT, IB, MI) {
+        try {
+            const response = await fetch(`https://rendezvousbackend.onrender.com/joinmeeting`, {
+                method: 'POST', // Set method to POST
+                headers: {
+                    'Content-Type': 'application/json', // Set content type to JSON
+                },
+                body: JSON.stringify({
+                    IT,  // Pass the InitiatedTo parameter
+                    IB,  // Pass the InitiatedBy parameter
+                    MI,  // Pass the MeetingID parameter
+                }),
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+    
+            const data = await response.json(); // Parse the response as JSON
+            return data.joinStatus; // Return the `joinStatus` from the response
+        } catch (error) {
+            console.error('Error fetching join status:', error);
+            return ''; // Return an empty string in case of an error
+        }
+    }
+    
+
+    // Initialize SweetAlert2 after fetching the name
+    async function showModal() {
+        const default_name = await fetchNameByID(CU); // Fetch the name based on ID
+
+        Swal.fire({
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            background: swalBackground,
+            title: BRAND.app.name,
+            input: 'text',
+            inputPlaceholder: 'Enter your name',
+            inputAttributes: { maxlength: 32 },
+            inputValue: default_name, // Use the fetched name as default
+            html: initUser, // Inject HTML
+            confirmButtonText: `Join meeting`,
+            customClass: { popup: 'init-modal-size' },
+            showClass: { popup: 'animate__animated animate__fadeInDown' },
+            hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+            inputValidator: (name) => {
+                if (!name) return 'Please enter your name';
+                if (name.length > 30) return 'Name must be max 30 char';
+                name = filterXSS(name);
+                if (isHtml(name)) return 'Invalid name!';
+                if (!getCookie(room_id + '_name')) {
+                    window.localStorage.peer_name = name;
+                }
+                setCookie(room_id + '_name', name, 30);
+                peer_name = name;
+            },
+        }).then(async () => {
+            if (initStream && !joinRoomWithScreen) {
+                await stopTracks(initStream);
+                elemDisplay('initVideo', false);
+                initVideoContainerShow(false);
+            }
+
+            if (CU === IB) {
+                // If CU and IB are the same, bypass the API call and directly join the room
+                getPeerInfo();
+                joinRoom(peer_name, MI);
+            } else {
+                // Else, proceed with the API call
+                const result = await JoinMeetingApi(IT, IB, MI);
+                if (result === 1) {
+                    // Join the room if the status is 1
+                    getPeerInfo();
+                    joinRoom(peer_name, MI);
+                } else {
+                    // Show an error if the join status is not 1
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Unable to join the meeting. Please try again.',
+                    });
+                }
+            }
+        });
+    }
+
+    // Call the function to show the modal
+    showModal();
+
 
     if (!isVideoAllowed) {
         elemDisplay('initVideo', false);
@@ -960,8 +1052,8 @@ async function whoAreYou() {
 function handleAudio() {
     isAudioAllowed = isAudioAllowed ? false : true;
     initAudioButton.className = 'fas fa-microphone' + (isAudioAllowed ? '' : '-slash');
-    setColor(initAudioButton, isAudioAllowed ? 'white' : 'red');
-    setColor(startAudioButton, isAudioAllowed ? 'white' : 'red');
+    setColor(initAudioButton, isAudioAllowed ? 'black' : 'red');
+    setColor(startAudioButton, isAudioAllowed ? 'black' : 'red');
     checkInitAudio(isAudioAllowed);
     lS.setInitConfig(lS.MEDIA_TYPE.audio, isAudioAllowed);
 }
@@ -969,8 +1061,8 @@ function handleAudio() {
 function handleVideo() {
     isVideoAllowed = isVideoAllowed ? false : true;
     initVideoButton.className = 'fas fa-video' + (isVideoAllowed ? '' : '-slash');
-    setColor(initVideoButton, isVideoAllowed ? 'white' : 'red');
-    setColor(startVideoButton, isVideoAllowed ? 'white' : 'red');
+    setColor(initVideoButton, isVideoAllowed ? 'black' : 'red');
+    setColor(startVideoButton, isVideoAllowed ? 'black' : 'red');
     checkInitVideo(isVideoAllowed);
     lS.setInitConfig(lS.MEDIA_TYPE.video, isVideoAllowed);
 }
@@ -991,11 +1083,11 @@ async function handleAudioVideo() {
         hide(initVideoAudioRefreshButton);
     }
     if (isAudioAllowed && isVideoAllowed && !DetectRTC.isMobileDevice) show(initVideoAudioRefreshButton);
-    setColor(initAudioVideoButton, isAudioVideoAllowed ? 'white' : 'red');
-    setColor(initAudioButton, isAudioAllowed ? 'white' : 'red');
-    setColor(initVideoButton, isVideoAllowed ? 'white' : 'red');
-    setColor(startAudioButton, isAudioAllowed ? 'white' : 'red');
-    setColor(startVideoButton, isVideoAllowed ? 'white' : 'red');
+    setColor(initAudioVideoButton, isAudioVideoAllowed ? 'black' : 'red');
+    setColor(initAudioButton, isAudioAllowed ? 'black' : 'red');
+    setColor(initVideoButton, isVideoAllowed ? 'black' : 'red');
+    setColor(startAudioButton, isAudioAllowed ? 'black' : 'red');
+    setColor(startVideoButton, isVideoAllowed ? 'black' : 'red');
     await checkInitVideo(isVideoAllowed);
     checkInitAudio(isAudioAllowed);
 }
@@ -1079,7 +1171,7 @@ async function shareRoom(useNavigator = false) {
             </div>
             <br/>
             <p style="background:transparent; color:rgb(8, 189, 89);">Join from your mobile device</p>
-            <p style="background:transparent; color:white; font-family: Arial, Helvetica, sans-serif;">No need for apps, simply capture the QR code with your mobile camera Or Invite someone else to join by sending them the following URL</p>
+            <p style="background:transparent; color:black; font-family: Arial, Helvetica, sans-serif;">No need for apps, simply capture the QR code with your mobile camera Or Invite someone else to join by sending them the following URL</p>
             <p style="background:transparent; color:rgb(8, 189, 89);">${RoomURL}</p>`,
             showDenyButton: true,
             showCancelButton: true,
@@ -1282,7 +1374,7 @@ function roomIsReady() {
     BUTTONS.settings.lobbyButton && show(lobbyButton);
     BUTTONS.settings.sendEmailInvitation && show(sendEmailInvitation);
     if (rc.recording.recSyncServerRecording) show(roomRecordingServer);
-    BUTTONS.main.aboutButton && show(aboutButton);
+    // BUTTONS.main.aboutButton && show(aboutButton);
     if (!DetectRTC.isMobileDevice) show(pinUnpinGridDiv);
     if (!isSpeechSynthesisSupported) hide(speechMsgDiv);
     handleButtons();
@@ -1398,7 +1490,7 @@ function handleButtons() {
         isButtonsBarOver = true;
     };
     control.onmouseout = () => {
-        isButtonsBarOver = false;
+        isButtonsBarOver = true;
     };
     exitButton.onclick = () => {
         rc.exitRoom();
@@ -1557,7 +1649,7 @@ function handleButtons() {
     };
     chatMarkdownButton.onclick = () => {
         isChatMarkdownOn = !isChatMarkdownOn;
-        setColor(chatMarkdownButton, isChatMarkdownOn ? 'lime' : 'white');
+        setColor(chatMarkdownButton, isChatMarkdownOn ? 'lime' : 'black');
     };
     chatSpeechStartButton.onclick = () => {
         startSpeech();
@@ -1892,7 +1984,7 @@ async function changeCamera(deviceId) {
         })
         .catch((error) => {
             console.error('[Error] changeCamera', error);
-            handleMediaError('video/audio', error);
+            handleMediaError('video/audio', error, '/');
         });
 }
 
@@ -1900,7 +1992,7 @@ async function changeCamera(deviceId) {
 // HANDLE MEDIA ERROR
 // ####################################################
 
-function handleMediaError(mediaType, err) {
+function handleMediaError(mediaType, err, redirectURL = false) {
     sound('alert');
 
     let errMessage = err;
@@ -1948,8 +2040,8 @@ function handleMediaError(mediaType, err) {
         </ul>
     `;
 
-    const redirectURL = ['screen', 'screenType'].includes(mediaType) || !getUserMediaError ? false : '/';
-
+    // const redirectURL = ['screen', 'screenType'].includes(mediaType) || !getUserMediaError ? false : '/';
+    // const redirectURL = ['screen', 'screenType'].includes(mediaType) || !getUserMediaError ? false : null;
     popupHtmlMessage(null, image.forbidden, 'Access denied', html, 'center', redirectURL);
 
     throw new Error(
@@ -1957,7 +2049,7 @@ function handleMediaError(mediaType, err) {
     );
 }
 
-function popupHtmlMessage(icon, imageUrl, title, html, position, redirectURL = false) {
+function popupHtmlMessage(icon, imageUrl, title, html, position, redirectURL = false, reloadPage = false) {
     Swal.fire({
         allowOutsideClick: false,
         allowEscapeKey: false,
@@ -1970,8 +2062,13 @@ function popupHtmlMessage(icon, imageUrl, title, html, position, redirectURL = f
         showClass: { popup: 'animate__animated animate__fadeInDown' },
         hideClass: { popup: 'animate__animated animate__fadeOutUp' },
     }).then((result) => {
-        if (result.isConfirmed && redirectURL) {
-            openURL(redirectURL);
+        if (result.isConfirmed) {
+            if (redirectURL) {
+                return openURL(redirectURL);
+            }
+            if (reloadPage) {
+                location.href = location.href;
+            }
         }
     });
 }
@@ -2281,10 +2378,10 @@ function handleSelects() {
     wbBackgroundColorEl.onchange = () => {
         setWhiteboardBgColor(wbBackgroundColorEl.value);
     };
-    whiteboardGhostButton.onclick = (e) => {
-        wbIsBgTransparent = !wbIsBgTransparent;
-        wbIsBgTransparent ? wbCanvasBackgroundColor('rgba(0, 0, 0, 0.100)') : setTheme();
-    };
+    // whiteboardGhostButton.onclick = (e) => {
+    //     wbIsBgTransparent = !wbIsBgTransparent;
+    //     wbIsBgTransparent ? wbCanvasBackgroundColor('rgba(0, 0, 0, 0.100)') : setTheme();
+    // };
     // room moderator rules
     switchEveryoneMute.onchange = (e) => {
         const audioStartMuted = e.currentTarget.checked;
@@ -2439,6 +2536,7 @@ function handleChatEmojiPicker() {
         theme: 'dark',
         onEmojiSelect: addEmojiToMsg,
     };
+
     const emojiPicker = new EmojiMart.Picker(pickerOptions);
     rc.getId('chatEmoji').appendChild(emojiPicker);
 
@@ -2450,7 +2548,7 @@ function handleChatEmojiPicker() {
 
 function handleRoomEmojiPicker() {
     const pickerRoomOptions = {
-        theme: 'dark',
+        theme: 'light',
         onEmojiSelect: sendEmojiToRoom,
     };
 
@@ -2591,7 +2689,7 @@ function handleRoomClientEvents() {
         console.log('Room event: Client lower hand');
         hide(lowerHandButton);
         show(raiseHandButton);
-        setColor(lowerHandIcon, 'white');
+        setColor(lowerHandIcon, 'black');
     });
     rc.on(RoomClient.EVENTS.startAudio, () => {
         console.log('Room event: Client start audio');
@@ -2939,7 +3037,7 @@ function getCookie(cName) {
 function isHtml(str) {
     var a = document.createElement('div');
     a.innerHTML = str;
-    for (var c = a.childNodes, i = c.length; i--; ) {
+    for (var c = a.childNodes, i = c.length; i--;) {
         if (c[i].nodeType == 1) return true;
     }
     return false;
@@ -2949,9 +3047,9 @@ function getId(id) {
     return document.getElementById(id);
 }
 
-// ####################################################
-// HANDLE WHITEBOARD
-// ####################################################
+//####################################################
+//HANDLE WHITEBOARD
+//####################################################
 
 function toggleWhiteboard() {
     if (!wbIsOpen) rc.sound('open');
@@ -2973,7 +3071,7 @@ function setupWhiteboard() {
 
 function setupWhiteboardCanvas() {
     wbCanvas = new fabric.Canvas('wbCanvas');
-    wbCanvas.freeDrawingBrush.color = '#FFFFFF';
+    wbCanvas.freeDrawingBrush.color = '#000000';
     wbCanvas.freeDrawingBrush.width = 3;
     whiteboardIsDrawingMode(true);
 }
@@ -3795,6 +3893,24 @@ function setTheme() {
     selectTheme.selectedIndex = localStorageSettings.theme;
     const theme = selectTheme.value;
     switch (theme) {
+        case 'white':
+            swalBackground = 'radial-gradient(#ffffff, #ffffff)';
+            document.documentElement.style.setProperty('--body-bg', 'radial-gradient(#ffffff, #ffffff)');
+            document.documentElement.style.setProperty('--transcription-bg', 'radial-gradient(#393939, #000000)');
+            // document.documentElement.style.setProperty('--msger-bg', 'radial-gradient(#393939, #000000)');
+            document.documentElement.style.setProperty('--msger-bg', 'radial-gradient(#ffffff, #ffffff)');
+            // document.documentElement.style.setProperty('--left-msg-bg', '#056162');
+            // document.documentElement.style.setProperty('--right-msg-bg', '#252d31');
+            document.documentElement.style.setProperty('--left-msg-bg', '#B3E5FC');
+            document.documentElement.style.setProperty('--right-msg-bg', '#B2FF59');
+            document.documentElement.style.setProperty('--select-bg', 'rgba(66, 165, 245, 0.3)');
+            document.documentElement.style.setProperty('--tab-btn-active', '#0D47A1');
+            document.documentElement.style.setProperty('--settings-bg', 'radial-gradient(#ffffff, #ffffff)');
+            document.documentElement.style.setProperty('--wb-bg', 'radial-gradient(#393939, #000000)');
+            document.documentElement.style.setProperty('--btns-bg-color', 'rgba(0, 0, 0, 0.7)');
+            document.body.style.background = 'radial-gradient(#ffffff, #ffffff)';
+            selectTheme.selectedIndex = 0;
+            break;
         case 'dark':
             swalBackground = 'radial-gradient(#393939, #000000)';
             document.documentElement.style.setProperty('--body-bg', 'radial-gradient(#393939, #000000)');
@@ -3806,9 +3922,10 @@ function setTheme() {
             document.documentElement.style.setProperty('--tab-btn-active', '#393939');
             document.documentElement.style.setProperty('--settings-bg', 'radial-gradient(#393939, #000000)');
             document.documentElement.style.setProperty('--wb-bg', 'radial-gradient(#393939, #000000)');
+            // document.documentElement.style.setProperty('--btns-bg-color', 'radial-gradient(#000000, #393939)');
             document.documentElement.style.setProperty('--btns-bg-color', 'rgba(0, 0, 0, 0.7)');
             document.body.style.background = 'radial-gradient(#393939, #000000)';
-            selectTheme.selectedIndex = 0;
+            selectTheme.selectedIndex = 1;
             break;
         case 'grey':
             swalBackground = 'radial-gradient(#666, #333)';
@@ -3823,7 +3940,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--wb-bg', 'radial-gradient(#797979, #000)');
             document.documentElement.style.setProperty('--btns-bg-color', 'rgba(0, 0, 0, 0.7)');
             document.body.style.background = 'radial-gradient(#666, #333)';
-            selectTheme.selectedIndex = 1;
+            selectTheme.selectedIndex = 2;
             break;
         case 'green':
             swalBackground = 'radial-gradient(#003934, #001E1A)';
@@ -3838,7 +3955,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--wb-bg', 'radial-gradient(#003934, #001E1A)');
             document.documentElement.style.setProperty('--btns-bg-color', 'radial-gradient(#003934, #001E1A)');
             document.body.style.background = 'radial-gradient(#003934, #001E1A)';
-            selectTheme.selectedIndex = 2;
+            selectTheme.selectedIndex = 3;
             break;
         case 'blue':
             swalBackground = 'radial-gradient(#306bac, #141B41)';
@@ -3853,7 +3970,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--wb-bg', 'radial-gradient(#306bac, #141B41)');
             document.documentElement.style.setProperty('--btns-bg-color', 'radial-gradient(#141B41, #306bac)');
             document.body.style.background = 'radial-gradient(#306bac, #141B41)';
-            selectTheme.selectedIndex = 3;
+            selectTheme.selectedIndex = 4;
             break;
         case 'red':
             swalBackground = 'radial-gradient(#69140E, #3C1518)';
@@ -3868,7 +3985,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--wb-bg', 'radial-gradient(#69140E, #3C1518)');
             document.documentElement.style.setProperty('--btns-bg-color', 'radial-gradient(#69140E, #3C1518)');
             document.body.style.background = 'radial-gradient(#69140E, #3C1518)';
-            selectTheme.selectedIndex = 4;
+            selectTheme.selectedIndex = 5;
             break;
         default:
             break;

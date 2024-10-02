@@ -78,7 +78,7 @@ function resizeVideoMedia() {
 
     max = max - Margin * 2;
     setWidth(Cameras, max, bigWidth, Margin, Height, isOneVideoElement);
-    document.documentElement.style.setProperty('--vmi-wh', max / 3 + 'px');
+    document.documentElement.style.setProperty('--vmi-wh', max / 4 + 'px');
 }
 
 function resetZoom() {
@@ -135,7 +135,7 @@ function resizeMainButtons() {
             setStyles(mainButtonsBar, '1rem', '5px', mainButtonsIcon, '1.1rem', '50px');
         } else {
             // > DESKTOP_BREAKPOINT
-            setStyles(mainButtonsBar, '1rem', '10px', mainButtonsIcon, '1.2rem', '60px');
+            setStyles(mainButtonsBar, '0rem', '10px', mainButtonsIcon, '1.5rem', '320px');
         }
     } else {
         // Main buttons horizontal align
@@ -147,7 +147,7 @@ function resizeMainButtons() {
             setStyles(mainButtonsBar, '1rem', '5px', mainButtonsIcon, '1.1rem');
         } else {
             // > DESKTOP_BREAKPOINT
-            setStyles(mainButtonsBar, '1rem', '10px', mainButtonsIcon, '1.2rem');
+            setStyles(mainButtonsBar, '0rem', '10px', mainButtonsIcon, '1.5rem');
         }
     }
     //

@@ -44,7 +44,7 @@
 
         <!-- https://cdnjs.com/libraries/font-awesome -->
 
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
         <!-- https://animate.style 4 using for swal fadeIn-Out -->
 
@@ -150,9 +150,9 @@ access to use this app.
                     <button id="initAudioVideoButton" class="fas fa-eye"></button>
                     <button id="initStartScreenButton" class="fas fa-desktop hidden"></button>
                     <button id="initStopScreenButton" class="fas fa-stop-circle hidden"></button>
-                    <select id="initVideoSelect" class="form-select text-light bg-dark"></select>
-                    <select id="initMicrophoneSelect" class="form-select text-light bg-dark"></select>
-                    <select id="initSpeakerSelect" class="form-select text-light bg-dark"></select>
+                    <select id="initVideoSelect" class="form-select bg-dark"></select>
+                    <select id="initMicrophoneSelect" class="form-select bg-dark"></select>
+                    <select id="initSpeakerSelect" class="form-select bg-dark"></select>
                 </div>
             </div>
         </section>
@@ -173,13 +173,15 @@ access to use this app.
             <button id="lowerHandButton" class="hidden"><i id="lowerHandIcon" class="fas fa-hand-paper"></i></button>
             <button id="emojiRoomButton" class="hidden"><i class="fas fa-face-smile"></i></button>
             <button id="chatButton" class="hidden"><i class="fas fa-comments"></i></button>
-            <button id="transcriptionButton" class="hidden"><i class="fas fa-closed-captioning"></i></button>
-            <button id="whiteboardButton" class="hidden"><i class="fas fa-chalkboard-teacher"></i></button>
+            <button style="display: none;" id="transcriptionButton" class="hidden"><i class="fas fa-closed-captioning"></i></button>
+            <button id="whiteboardButton" class="hidden"><i class="fa-solid fa-chalkboard"></i></button>
             <button id="settingsButton" class="hidden"><i class="fas fa-cogs"></i></button>
             <button id="aboutButton" class="hidden"><i class="fas fa-question"></i></button>
             <!-- <button id="restartICE" class="hidden"><i class="fas fa-satellite-dish"></i></button> -->
-            <button id="exitButton" class="hidden"><i class="fas fa-right-from-bracket"></i></button>
+            <button id="exitButton" class="hidden"><i class="fa-solid fa-phone-slash" style="color: red;"></i></button>
         </div>
+
+        <div style="left: 1%; top: 95%; position: absolute;"><p style="font-size: large; font-weight: bold;">Rendezvous</p></div>
 
         <div id="emojiPickerContainer" class="roomEmoji fadein">
             <div id="emojiPickerHeader" class="emojiPickerHeader">
@@ -221,7 +223,7 @@ access to use this app.
                     <button id="tabAspectBtn" class="fas fa-screwdriver-wrench tablinks">
                         <p class="tabButtonText">Aspect</p>
                     </button>
-                    <button id="tabStylingBtn" class="fas fa-palette tablinks">
+                    <button style="display: none;" id="tabStylingBtn" class="fas fa-palette tablinks">
                         <p class="tabButtonText">Style</p>
                     </button>
                     <button id="tabLanguagesBtn" class="fas fa-globe tablinks">
@@ -303,7 +305,7 @@ access to use this app.
                                     </div>
                                 </td>
                             </tr>
-                            <tr id="shareOnJoinButton">
+                            <tr id="shareOnJoinButton" style="display: none;">
                                 <td class="custom-width">
                                     <div class="title">
                                         <i class="fas fa-share-alt"></i>
@@ -359,13 +361,13 @@ access to use this app.
                             <i class="fas fa-video"></i>
                             <p>Video Source:</p>
                         </div>
-                        <select id="videoSelect" class="form-select text-light bg-dark"></select>
+                        <select id="videoSelect" class="form-select  bg-dark"></select>
                         <br />
-                        <div class="title">
+                        <div class="title" style="display: none;">
                             <i class="fas fa-palette"></i>
                             <p>Video Quality:</p>
                         </div>
-                        <select id="videoQuality" class="form-select text-light bg-dark">
+                        <select id="videoQuality" class="form-select  bg-dark" style="display: none;">
                             <option value="default">🎥&nbsp;Default</option>
                             <option value="qvga">🎥&nbsp;QVGA</option>
                             <option value="vga">🎥&nbsp;VGA</option>
@@ -380,7 +382,7 @@ access to use this app.
                             <p>Camera FPS:</p>
                         </div>
                         <br />
-                        <select id="videoFps" class="form-select text-light bg-dark">
+                        <select id="videoFps" class="form-select  bg-dark">
                             <option value="max">max frame-per-second</option>
                             <option value="30">30 - frame-per-second</option>
                             <option value="15">15 - frame-per-second</option>
@@ -393,9 +395,9 @@ access to use this app.
                                 <p>Screen FPS:</p>
                             </div>
                             <br />
-                            <select id="screenFps" class="form-select text-light bg-dark">
+                            <select id="screenFps" class="form-select  bg-dark">
                                 <option value="max">max frame-per-second</option>
-                                <option value="30">30 - frame-per-second</option>
+                                <option selected value="30">30 - frame-per-second</option>
                                 <option value="15">15 - frame-per-second</option>
                                 <option value="5">5 - frame-per-second</option>
                             </select>
@@ -413,7 +415,7 @@ access to use this app.
                             <i class="fas fa-microphone"></i>
                             <p>Microphone:</p>
                         </div>
-                        <select id="microphoneSelect" class="form-select text-light bg-dark"></select>
+                        <select id="microphoneSelect" class="form-select  bg-dark"></select>
                         <br />
                         <div class="volume-container">
                             <div class="volume-bar"></div>
@@ -505,7 +507,7 @@ access to use this app.
                                         <td>
                                             <select
                                                 id="sampleRateSelect"
-                                                class="form-select form-select-sm text-light bg-dark"
+                                                class="form-select form-select-sm  bg-dark"
                                             >
                                                 <option value="48000">48000 Hz</option>
                                                 <option value="44100">44100 Hz</option>
@@ -522,7 +524,7 @@ access to use this app.
                                         <td>
                                             <select
                                                 id="sampleSizeSelect"
-                                                class="form-select form-select-sm text-light bg-dark"
+                                                class="form-select form-select-sm  bg-dark"
                                             >
                                                 <option value="16">16 bits</option>
                                                 <option value="32">32 bits</option>
@@ -539,7 +541,7 @@ access to use this app.
                                         <td>
                                             <select
                                                 id="channelCountSelect"
-                                                class="form-select form-select-sm text-light bg-dark"
+                                                class="form-select form-select-sm  bg-dark"
                                             >
                                                 <option value="1">1 (mono)</option>
                                                 <option value="2">2 (stereo)</option>
@@ -603,12 +605,11 @@ access to use this app.
                             </div>
                         </div>
                         <div id="speakerSelectDiv">
-                            <hr />
                             <div class="title">
                                 <i class="fas fa-headphones"></i>
                                 <p>Speaker:</p>
                             </div>
-                            <select id="speakerSelect" class="form-select text-light bg-dark"></select>
+                            <select id="speakerSelect" class="form-select  bg-dark"></select>
                             <hr />
                             <button id="speakerTestBtn">
                                 <i class="fa-solid fa-circle-play"></i>
@@ -778,6 +779,7 @@ access to use this app.
                                             id="switchDisconnectAllOnLeave"
                                             class="form-check-input"
                                             type="checkbox"
+                                            checked
                                         />
                                     </div>
                                 </td>
@@ -908,7 +910,7 @@ access to use this app.
                             <hr />
                             <div class="container-flex">
                                 <div id="avatarVideoAIcontainer"></div>
-                                <select id="avatarQuality" class="form-select text-light bg-dark">
+                                <select id="avatarQuality" class="form-select  bg-dark">
                                     <option value="low">Avatar Quality - Low</option>
                                     <option value="medium" selected>Avatar Quality - Medium</option>
                                     <option value="hight">Avatar Quality - Hight</option>
@@ -916,7 +918,7 @@ access to use this app.
                                 <select
                                     id="avatarVoiceIDs"
                                     name="avatarVoiceIDs"
-                                    class="form-select text-light bg-dark"
+                                    class="form-select  bg-dark"
                                 >
                                     <option value="">Select Avatar Voice</option></select
                                 ><br />
@@ -977,7 +979,7 @@ access to use this app.
                             <p>Aspect ratio:</p>
                         </div>
                         <br />
-                        <select id="BtnAspectRatio" class="form-select text-light bg-dark">
+                        <select id="BtnAspectRatio" class="form-select  bg-dark">
                             <option value="0">default</option>
                             <option value="1">4:3</option>
                             <option value="2">16:9</option>
@@ -990,7 +992,7 @@ access to use this app.
                             <p>Video Object fit:</p>
                         </div>
                         <br />
-                        <select id="BtnVideoObjectFit" class="form-select text-light bg-dark">
+                        <select id="BtnVideoObjectFit" class="form-select  bg-dark">
                             <option value="fill">fill</option>
                             <option value="contain">contain</option>
                             <option value="cover">cover</option>
@@ -1003,7 +1005,7 @@ access to use this app.
                             <p>Video Controls:</p>
                         </div>
                         <br />
-                        <select id="BtnVideoControls" class="form-select text-light bg-dark">
+                        <select id="BtnVideoControls" class="form-select  bg-dark">
                             <option value="off">off</option>
                             <option value="on">on</option>
                         </select>
@@ -1017,7 +1019,8 @@ access to use this app.
                             <p>Theme:</p>
                         </div>
                         <br />
-                        <select id="selectTheme" class="form-select text-light bg-dark">
+                        <select id="selectTheme" class="form-select  bg-dark">
+                            <option value="white">⚪ &nbsp;White</option>
                             <option value="dark">⚫ &nbsp;Dark</option>
                             <option value="grey">⚪ &nbsp;Grey</option>
                             <option value="green">🟢 &nbsp;Green</option>
@@ -1047,9 +1050,9 @@ access to use this app.
                             <p>Buttons bar:</p>
                         </div>
                         <br />
-                        <select id="BtnsBarPosition" class="form-select text-light bg-dark">
+                        <select id="BtnsBarPosition" class="form-select  bg-dark">
+                            <option value="horizontal" selected>Horizontal</option>
                             <option value="vertical">Vertical</option>
-                            <option value="horizontal">Horizontal</option>
                         </select>
                         <br />
                         <div id="pinUnpinGridDiv" class="hidden">
@@ -1058,7 +1061,7 @@ access to use this app.
                                 <p>Pin video position:</p>
                             </div>
                             <br />
-                            <select id="pinVideoPosition" class="form-select text-light bg-dark">
+                            <select id="pinVideoPosition" class="form-select  bg-dark">
                                 <option value="vertical">Vertical</option>
                                 <option value="horizontal">Horizontal</option>
                                 <option value="top">Top</option>
@@ -1113,19 +1116,20 @@ access to use this app.
             <header id="whiteboardHeader" class="whiteboard-header">
                 <div id="whiteboardTitle" class="whiteboard-header-title">
                     <button id="whiteboardCloseBtn" class="fas fa-times"></button>
+                    <p style="padding: 0%; margin: 0%; font-size: large; color: white;">Whiteboard</p>
                     <div class="form-check form-switch form-switch-md">
                         <input id="whiteboardLockButton" class="form-check-input" type="checkbox" />
                     </div>
                 </div>
                 <div id="whiteboardOptions" class="whiteboard-header-options">
-                    <button id="whiteboardGhostButton" class="fas fa-circle-half-stroke"></button>
-                    <input id="wbBackgroundColorEl" class="whiteboardColorPicker" type="color" value="#000000" />
-                    <input id="wbDrawingColorEl" class="whiteboardColorPicker" type="color" value="#FFFFFF" />
+                    <!-- <button id="whiteboardGhostButton" class="fas fa-circle-half-stroke"></button> -->
+                    <input id="wbBackgroundColorEl" class="whiteboardColorPicker" type="color" value="#FFFFFF" />
+                    <input id="wbDrawingColorEl" class="whiteboardColorPicker" type="color" value="black" />
                     <button id="whiteboardPencilBtn" class="fas fa-pencil-alt"></button>
                     <button id="whiteboardObjectBtn" class="fas fa-mouse-pointer"></button>
                     <button id="whiteboardUndoBtn" class="fas fa-undo"></button>
                     <button id="whiteboardRedoBtn" class="fas fa-redo"></button>
-                    <div class="dropdown">
+                    <div class="dropdown" style="display: none;">
                         <button
                             class="dropdown-toggle"
                             type="button"
@@ -1423,8 +1427,8 @@ access to use this app.
                 </header>
                 <main id="transcriptionChat" class="transcription-chat"></main>
                 <div class="transcription-inputarea">
-                    <select id="transcriptionLanguage" class="form-select text-light bg-dark"></select>
-                    <select id="transcriptionDialect" class="form-select text-light bg-dark"></select>
+                    <select id="transcriptionLanguage" class="form-select bg-dark"></select>
+                    <select id="transcriptionDialect" class="form-select bg-dark"></select>
                     <button id="transcriptionSpeechStart" class=""><i class="fas fa-play"></i></button>
                     <button id="transcriptionSpeechStop" class="hidden"><i class="fas fa-stop"></i></button>
                 </div>

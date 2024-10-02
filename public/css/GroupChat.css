@@ -75,7 +75,8 @@
 }
 
 .people-list .chat-list li .name {
-    color: #fff;
+    /* color: #fff; */
+    color: #000000;
     font-size: 15px;
 }
 
@@ -152,7 +153,8 @@
 .chat .chat-header .chat-about {
     float: left;
     padding-left: 10px;
-    color: #fff;
+    /* color: #fff; */
+    color: #000000;
 }
 
 .chat .chat-header .status {
@@ -203,13 +205,14 @@
 }
 
 .chat .chat-history .message-data-time {
-    color: #eeeeee;
+    color: #707070;
     padding-left: 6px;
 }
 
 /* chat message bubble */
 .chat .chat-history .message {
-    color: #fff;
+    /* color: #fff; */
+    color: #000000;
     padding: 18px 20px;
     line-height: 26px;
     font-size: 16px;
@@ -347,7 +350,8 @@
 textarea,
 input[type='text'] {
     background: var(--msger-bg) !important;
-    color: #fff !important;
+    /* color: #fff !important; */
+    color: #000000 !important;
     transition: height 0.5s !important;
 }
 

@@ -15,7 +15,7 @@ const isRulesActive = true;
  */
 let BUTTONS = {
     main: {
-        shareButton: true, // for quest, presenter default true
+        shareButton: false, // for quest, presenter default true
         hideMeButton: true,
         startAudioButton: true,
         startVideoButton: true,
@@ -27,7 +27,7 @@ let BUTTONS = {
         whiteboardButton: true,
         emojiRoomButton: true,
         settingsButton: true,
-        aboutButton: true, // Please keep me always visible, thank you!
+        aboutButton: false, // Please keep me always visible, thank you!
         exitButton: true,
     },
     settings: {
@@ -129,7 +129,7 @@ function handleRules(isPresenter) {
         // ##################################
         // PRESENTER
         // ##################################
-        BUTTONS.main.shareButton = true;
+        BUTTONS.main.shareButton = false;
         BUTTONS.settings.lockRoomButton = BUTTONS.settings.lockRoomButton && !isRoomLocked;
         BUTTONS.settings.unlockRoomButton = BUTTONS.settings.lockRoomButton && isRoomLocked;
         BUTTONS.settings.sendEmailInvitation = true;
@@ -160,8 +160,8 @@ function handleRules(isPresenter) {
         switchEveryoneCantShareScreen.checked = localStorageSettings.moderator_screen_cant_share;
         switchEveryoneCantChatPrivately.checked = localStorageSettings.moderator_chat_cant_privately;
         switchEveryoneCantChatChatGPT.checked = localStorageSettings.moderator_chat_cant_chatgpt;
-        switchDisconnectAllOnLeave.checked = localStorageSettings.moderator_disconnect_all_on_leave;
-
+        // switchDisconnectAllOnLeave.checked = localStorageSettings.moderator_disconnect_all_on_leave;
+        switchDisconnectAllOnLeave.checked = true;
         // Update moderator settings...
         const moderatorData = {
             audio_start_muted: switchEveryoneMute.checked,

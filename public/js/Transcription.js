@@ -319,7 +319,7 @@ class Transcription {
             rc.videoMediaContainer.style.top = 0;
             rc.videoMediaContainer.style.right = null;
             rc.videoMediaContainer.style.width = '100%';
-            rc.videoMediaContainer.style.height = '100%';
+            rc.videoMediaContainer.style.height = '93%';
         }
         document.documentElement.style.setProperty('--transcription-width', '420px');
         document.documentElement.style.setProperty('--transcription-height', '680px');
@@ -327,7 +327,7 @@ class Transcription {
         show(transcriptionMaxBtn);
         this.center();
         this.isPinned = false;
-        setColor(transcriptionTogglePinBtn, 'white');
+        setColor(transcriptionTogglePinBtn, 'black');
         resizeVideoMedia();
         resizeTranscriptionRoom();
         transcriptionRoom.style.resize = 'both';

@@ -1799,7 +1799,7 @@ class RoomClient {
                 p = document.createElement('p');
                 p.id = this.peer_id + '__name';
                 p.className = html.userName;
-                p.innerText = (isPresenter ? '⭐️ ' : '') + this.peer_name + ' (me)';
+                p.innerText = (isPresenter ? '🔷 ' : '') + this.peer_name + ' (me)';
                 i = document.createElement('i');
                 i.id = this.peer_id + '__hand';
                 i.className = html.userHand;
@@ -2220,7 +2220,7 @@ class RoomClient {
                 p = document.createElement('p');
                 p.id = remotePeerId + '__name';
                 p.className = html.userName;
-                p.innerText = (remotePeerPresenter ? '⭐️ ' : '') + peer_name;
+                p.innerText = (remotePeerPresenter ? '🔷 ' : '') + peer_name;
                 pm = document.createElement('div');
                 pb = document.createElement('div');
                 pm.setAttribute('id', remotePeerId + '__pitchMeter');
@@ -2422,7 +2422,7 @@ class RoomClient {
         p = document.createElement('p');
         p.id = peer_id + '__name';
         p.className = html.userName;
-        p.innerText = (peer_presenter ? '⭐️ ' : '') + peer_name + (remotePeer ? '' : ' (me) ');
+        p.innerText = (peer_presenter ? '🔷 ' : '') + peer_name + (remotePeer ? '' : ' (me) ');
         h = document.createElement('i');
         h.id = peer_id + '__hand';
         h.className = html.userHand;
@@ -2557,13 +2557,56 @@ class RoomClient {
         }
     }
 
-    exitRoom() {
-        //...
-        if (isPresenter && switchDisconnectAllOnLeave.checked) {
-            this.ejectAllOnLeave();
+    async exitRoom() {
+        console.log(window.location.href);
+    
+        // Extract IT, IB, and MeetingID from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const IT = urlParams.get('IT'); // Invited user ID
+        const IB = urlParams.get('IB'); // Initiating user ID
+        const MI = window.location.pathname.split('/join/')[1]; // Extract MeetingID from the path
+    
+        try {
+            // Make the API call to leave the meeting
+            const response = await fetch(`https://rendezvousbackend.onrender.com/leavemeeting`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ID: IB, MI }), // Pass InitiatedBy (IB) and MeetingID (MI)
+            });
+    
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+    
+            const data = await response.json();
+    
+            if (data.leaveStatus === 1) {
+                console.log('Successfully left the meeting');
+    
+                // Continue with the rest of the exitRoom logic
+                if (isPresenter && switchDisconnectAllOnLeave.checked) {
+                    this.ejectAllOnLeave(); // Eject all participants if the presenter is leaving
+                }
+                this.exit(); // Exit the room
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Unable to leave the meeting. Please try again.',
+                });
+            }
+        } catch (error) {
+            console.error('Error during leave meeting:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Server error occurred while leaving the meeting.',
+            });
         }
-        this.exit();
     }
+    
 
     // ####################################################
     // EJECT ALL ON LEAVE ROOM
@@ -3060,7 +3103,7 @@ class RoomClient {
                 document.documentElement.style.setProperty('--btns-flex-direction', 'column');
                 break;
             case 'horizontal':
-                document.documentElement.style.setProperty('--btns-top', '95%');
+                document.documentElement.style.setProperty('--btns-top', '96%');
                 document.documentElement.style.setProperty('--btns-right', '25%');
                 document.documentElement.style.setProperty('--btns-left', '50%');
                 document.documentElement.style.setProperty('--btns-margin-left', '-160px');
@@ -3226,7 +3269,7 @@ class RoomClient {
                     cam.className = 'Camera';
                     this.videoMediaContainer.appendChild(cam);
                     this.removeVideoPinMediaContainer();
-                    setColor(btnPn, 'white');
+                    setColor(btnPn, 'black');
                 }
                 handleAspectRatio();
             });
@@ -3247,11 +3290,14 @@ class RoomClient {
                 this.videoMediaContainer.style.height = '25%';
                 break;
             case 'vertical':
-                this.videoPinMediaContainer.style.top = 0;
+                // this.videoPinMediaContainer.style.top = 0;
+                this.videoPinMediaContainer.style.top = '0.8%';
+                this.videoPinMediaContainer.style.left = '0.6%';
                 this.videoPinMediaContainer.style.width = '75%';
-                this.videoPinMediaContainer.style.height = '100%';
+                // this.videoPinMediaContainer.style.height = '100%';
+                this.videoPinMediaContainer.style.height = '92%';
                 this.videoMediaContainer.style.top = 0;
-                this.videoMediaContainer.style.width = '25%';
+                this.videoMediaContainer.style.width = '24%';
                 this.videoMediaContainer.style.height = '100%';
                 this.videoMediaContainer.style.right = 0;
                 break;
@@ -3337,7 +3383,7 @@ class RoomClient {
         this.videoMediaContainer.style.top = 0;
         this.videoMediaContainer.style.right = null;
         this.videoMediaContainer.style.width = '100%';
-        this.videoMediaContainer.style.height = '100%';
+        this.videoMediaContainer.style.height = '93%';
         this.pinnedVideoPlayerId = null;
         this.isVideoPinned = false;
         if (this.isChatPinned) {
@@ -3511,7 +3557,7 @@ class RoomClient {
         plist.classList.toggle('hidden');
         const isParticipantsListHidden = !this.isPlistOpen();
         chat.style.marginLeft = isParticipantsListHidden ? 0 : '300px';
-        chat.style.borderLeft = isParticipantsListHidden ? 'none' : '1px solid rgb(255 255 255 / 32%)';
+        chat.style.borderLeft = isParticipantsListHidden ? 'none' : '1px solid rgb(66 165 245 / 32%)';
         if (this.isChatPinned) elemDisplay(chat.id, isParticipantsListHidden);
         if (!this.isChatPinned) elemDisplay(chat.id, true);
         this.toggleChatHistorySize(isParticipantsListHidden && (this.isChatPinned || this.isChatMaximized));
@@ -3578,7 +3624,7 @@ class RoomClient {
             this.videoMediaContainer.style.top = 0;
             this.videoMediaContainer.style.right = null;
             this.videoMediaContainer.style.width = '100%';
-            this.videoMediaContainer.style.height = '100%';
+            this.videoMediaContainer.style.height = '93%';
         }
         document.documentElement.style.setProperty('--msger-width', '800px');
         document.documentElement.style.setProperty('--msger-height', '700px');
@@ -3586,7 +3632,7 @@ class RoomClient {
         BUTTONS.chat.chatMaxButton && show(chatMaxButton);
         this.chatCenter();
         this.isChatPinned = false;
-        setColor(chatTogglePin, 'white');
+        setColor(chatTogglePin, 'black');
         resizeVideoMedia();
         if (!this.isMobileDevice) this.makeDraggable(chatRoom, chatHeader);
         if (!this.isPlistOpen()) this.toggleShowParticipants();
@@ -3614,7 +3660,7 @@ class RoomClient {
     toggleChatEmoji() {
         this.getId('chatEmoji').classList.toggle('show');
         this.isChatEmojiOpen = this.isChatEmojiOpen ? false : true;
-        this.getId('chatEmojiButton').style.color = this.isChatEmojiOpen ? '#FFFF00' : '#FFFFFF';
+        this.getId('chatEmojiButton').style.color = this.isChatEmojiOpen ? '#FFFF00' : 'black';
     }
 
     addEmojiToMsg(data) {
@@ -4226,29 +4272,178 @@ class RoomClient {
         }
     }
 
+    // recordingOptions(options, audioMixerTracks) {
+    //     Swal.fire({
+    //         background: 'white',
+    //         position: 'top',
+    //         html: `
+    //         <br />
+    //     <div style="
+    //         align-items: start;
+    //         display: flex;
+    //         flex-direction: column;
+    //     ">
+    //         <h1 style="font-size: 20px;color: black;/* justify-content: flex-start; */justify-items: start;">Recording
+    //             Options</h1>
+    //         <div
+    //             style="display: flex;flex-direction: row;padding: 10px;justify-content: flex-start;gap: 10px;width: 100%;border: 1px solid rgba(104, 104, 104, 0.3);align-items: center;border-radius: 5px; margin-bottom: 10px; box-shadow: 0px 1px 6px 0px rgba(104, 104, 104, 0.3);">
+    //             <i class="fa-solid fa-desktop" style="color: black; margin-left: 15px;"></i>
+    //             <h1 style="font-size: 20px; color: black;">Screen / Window</h1>
+    //         </div>
+    //         <div
+    //             style="display: flex;flex-direction: row;padding: 10px;justify-content: flex-start;gap: 10px;border: 1px solid rgba(104, 104, 104, 0.3);align-items: center;width: 100%;border-radius: 5px; box-shadow: 0px 1px 6px 0px rgba(104, 104, 104, 0.3);">
+    //             <i class="fa-solid fa-camera" style="color: black; margin-left: 15px;"></i>
+    //             <h1 style="font-size: 20px; color: black;">Camera</h1>
+    //         </div>
+    //     </div>
+    //         <br />
+    //         `,
+    //         title: 'Recording options',
+    //         showDenyButton: true,
+    //         showCancelButton: true,
+    //         cancelButtonColor: 'red',
+    //         denyButtonColor: '#42a5f5',
+    //         confirmButtonColor: '#0077c2',
+    //         confirmButtonText: `Camera`,
+    //         denyButtonText: `Screen/Window`,
+    //         cancelButtonText: `Cancel`,
+    //         showClass: { popup: 'animate__animated animate__fadeInDown' },
+    //         hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+    //     }).then((result) => {
+    //         if (result.isConfirmed) {
+    //             this.startMobileRecording(options, audioMixerTracks);
+    //         } else if (result.isDenied) {
+    //             this.startDesktopRecording(options, audioMixerTracks);
+    //         }
+    //     });
+    // }
     recordingOptions(options, audioMixerTracks) {
         Swal.fire({
-            background: swalBackground,
+            background: 'white',
             position: 'top',
-            imageUrl: image.recording,
-            title: 'Recording options',
-            showDenyButton: true,
-            showCancelButton: true,
-            cancelButtonColor: 'red',
-            denyButtonColor: 'green',
-            confirmButtonText: `Camera`,
-            denyButtonText: `Screen/Window`,
-            cancelButtonText: `Cancel`,
+            html: 
+            `
+            <style>
+                .option-label {
+                    transition: background-color 0.3s, color 0.3s;
+                    padding: 10px;
+                    display: flex;
+                    align-items: center;
+                    color: rgba(104, 104, 104, 0.8);
+                    width: 100%;
+                    height: 4rem;
+                    border-radius: 10px;
+                    border: 1px solid rgba(104, 104, 104, 0.3);
+                    box-shadow: 0px 1px 6px 0px rgba(104, 104, 104, 0.3);
+                }
+                .option-label:hover {
+                    background-color: rgba(0, 119, 194, 0.1);
+                }
+                input[type="radio"]:checked + .option-label {
+                    background-color: #0077c2;
+                    color: white;
+                    font-weight: bold;
+                }
+                #icons-label {
+                    margin-right: 20px; 
+                    margin-left: 20px;
+                }
+                input[type="radio"]:checked + #icons-label {
+                    color: white;
+                    font-weight: bold;
+                }
+                .action-button {
+                    background-color: #42a5f5; 
+                    color: white; 
+                    padding: 10px 20px; 
+                    border: none; 
+                    border-radius: 10px; 
+                    font-size: 16px; 
+                    cursor: pointer; 
+                    width: 48%;
+                    height: 4rem;
+                    transition: transform 0.2s;
+                }
+                .action-button:hover {
+                    transform: scale(1.05);
+                    color: white;
+                    font-weight: bold;
+                }
+                .cancel-button {
+                    background-color: red; 
+                    color: white; 
+                    padding: 10px 20px; 
+                    border: none; 
+                    border-radius: 10px; 
+                    font-size: 16px; 
+                    cursor: pointer; 
+                    width: 48%;
+                    height: 4rem;
+                    transition: transform 0;
+                }
+                .cancel-button:hover {
+                    transform: scale(1);
+                    color: white;
+                    font-weight: bold;
+                }
+            </style>
+            <br />
+            <div style="display: flex; flex-direction: column;">
+                <h1 style="font-size: 20px; color: black; margin-bottom: 20px; text-align: start;">Recording Options</h1>
+                <div style="margin-bottom: 15px; width:100%">
+                    <input type="radio" id="screenWindowOption" name="recordingOption" value="screenWindow" style="display:none;">
+                    <label for="screenWindowOption" class="option-label">
+                        <i class="fa-solid fa-desktop" id="icons-label"></i>
+                        Screen / Window
+                    </label>
+                </div>
+                <div style="width:100%; height: fit-content">
+                    <input type="radio" id="cameraOption" name="recordingOption" value="camera" style="display:none;">
+                    <label for="cameraOption" class="option-label">
+                        <i class="fa-solid fa-camera" id="icons-label"></i>
+                        Camera
+                    </label>
+                </div>
+                <br />
+                <div style="display: flex; justify-content: space-between; width:100%">
+                    <button id="startRecordingButton" class="action-button">Start Recording</button>
+                    <button id="cancelButton" class="cancel-button">Cancel</button>
+                </div>
+            </div>
+            <br />
+            `,
+            showConfirmButton: false,
             showClass: { popup: 'animate__animated animate__fadeInDown' },
             hideClass: { popup: 'animate__animated animate__fadeOutUp' },
-        }).then((result) => {
-            if (result.isConfirmed) {
-                this.startMobileRecording(options, audioMixerTracks);
-            } else if (result.isDenied) {
-                this.startDesktopRecording(options, audioMixerTracks);
+            didOpen: () => {
+                document.getElementById('startRecordingButton').addEventListener('click', () => {
+                    const selectedOption = document.querySelector('input[name="recordingOption"]:checked');
+                    if (selectedOption) {
+                        if (selectedOption.value === 'screenWindow') {
+                            this.startDesktopRecording(options, audioMixerTracks);
+                        } else if (selectedOption.value === 'camera') {
+                            this.startMobileRecording(options, audioMixerTracks);
+                        }
+                        Swal.close();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'No option selected',
+                            text: 'Please select a recording option before starting.',
+                            confirmButtonColor: '#0077c2',
+                        });
+                    }
+                });
+                document.getElementById('cancelButton').addEventListener('click', () => {
+                    Swal.close();
+                });
             }
         });
     }
+    
+    
+    
+    
 
     startMobileRecording(options, audioMixerTracks) {
         try {
@@ -6426,7 +6621,7 @@ class RoomClient {
             li.style.display = shouldDisplay ? '' : 'none';
         }
         this.isToggleRaiseHand = !this.isToggleRaiseHand;
-        setColor(participantsRaiseHandBtn, this.isToggleRaiseHand ? 'lime' : 'white');
+        setColor(participantsRaiseHandBtn, this.isToggleRaiseHand ? 'lime' : 'black');
     }
 
     // ####################################################
@@ -6444,7 +6639,7 @@ class RoomClient {
             li.style.display = shouldDisplay ? '' : 'none';
         }
         this.isToggleUnreadMsg = !this.isToggleUnreadMsg;
-        setColor(participantsUnreadMessagesBtn, this.isToggleUnreadMsg ? 'lime' : 'white');
+        setColor(participantsUnreadMessagesBtn, this.isToggleUnreadMsg ? 'lime' : 'black');
     }
 
     // ####################################################
@@ -6467,7 +6662,7 @@ class RoomClient {
             const truncatedTitle = isSensitiveChat ? `${title.substring(0, 10)}*****` : title;
             return `
                 <img class="all-participants-img" 
-                    style="border: var(--border); width: 43px; margin-right: 5px; cursor: pointer;"
+                    style="border: var(--border); width: 43px; margin-right: 5px; cursor: pointer; background-color: black;"
                     id="chatShowParticipantsList" 
                     src="${image.users}"
                     alt="participants"
