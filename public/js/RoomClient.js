@@ -358,11 +358,56 @@ class RoomClient {
             this._isConnected = true;
             successCallback();
         });
+
+
+
+
+        // Start checking every 5 seconds if still in the meeting
+        this.checkIfInMeeting();
     }
 
     // ####################################################
     // GET STARTED
     // ####################################################
+
+
+
+    // New method to call your server and check meeting status
+    async checkIfInMeeting() {
+        // Save the interval ID to clear it later if needed
+
+        // Extract IT, IB, and MeetingID from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const IT = urlParams.get('IT'); // Invited user ID
+        const CU = urlParams.get('CU'); // Initiating user ID
+        const IB = urlParams.get('IB'); // Initiating user ID
+
+        const MI = window.location.pathname.split('/join/')[1]; // Extract MeetingID from the path
+
+        // Save the interval ID to clear it later if needed
+        this.meetingCheckInterval = setInterval(() => {
+            fetch('https://rendezvousbackend.onrender.com/updateleavemeeting', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    IT: CU, // Current user (initiated to)
+                    IB,    // Initiated by (should be set from your context)
+                    MI,    // Meeting ID
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.inMeeting) {
+                        console.warn('You have been removed from the meeting in the database.');
+                        // Call the exitRoom function to disconnect
+                        this.exitRoom();
+                    }
+                })
+                .catch(error => console.error('Error checking meeting status:', error));
+        }, 5000); // Every 5 seconds
+    }
 
     async createRoom(room_id) {
         await this.socket
@@ -468,7 +513,7 @@ class RoomClient {
             if (BUTTONS.settings.tabRecording) {
                 room.config.hostOnlyRecording
                     ? (console.log('07.1 ----> WARNING Room Host only recording enabled'),
-                      this.event(_EVENTS.hostOnlyRecordingOn))
+                        this.event(_EVENTS.hostOnlyRecordingOn))
                     : this.event(_EVENTS.hostOnlyRecordingOff);
             }
 
@@ -2559,14 +2604,17 @@ class RoomClient {
 
     async exitRoom() {
         console.log(window.location.href);
-    
+
         // Extract IT, IB, and MeetingID from the URL
         const urlParams = new URLSearchParams(window.location.search);
         const IT = urlParams.get('IT'); // Invited user ID
         const IB = urlParams.get('IB'); // Initiating user ID
         const MI = window.location.pathname.split('/join/')[1]; // Extract MeetingID from the path
-    
+
         try {
+            if (this.meetingCheckInterval) {
+                clearInterval(this.meetingCheckInterval); // Clear the interval to stop API calls
+            }
             // Make the API call to leave the meeting
             const response = await fetch(`https://rendezvousbackend.onrender.com/leavemeeting`, {
                 method: 'POST',
@@ -2575,16 +2623,16 @@ class RoomClient {
                 },
                 body: JSON.stringify({ ID: IB, MI }), // Pass InitiatedBy (IB) and MeetingID (MI)
             });
-    
+
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-    
+
             const data = await response.json();
-    
+
             if (data.leaveStatus === 1) {
                 console.log('Successfully left the meeting');
-    
+
                 // Continue with the rest of the exitRoom logic
                 if (isPresenter && switchDisconnectAllOnLeave.checked) {
                     this.ejectAllOnLeave(); // Eject all participants if the presenter is leaving
@@ -2606,7 +2654,7 @@ class RoomClient {
             });
         }
     }
-    
+
 
     // ####################################################
     // EJECT ALL ON LEAVE ROOM
@@ -3166,9 +3214,9 @@ class RoomClient {
             el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullScreen;
         if (document.fullscreenEnabled) {
             document.fullscreenElement ||
-            document.webkitFullscreenElement ||
-            document.mozFullScreenElement ||
-            document.msFullscreenElement
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement ||
+                document.msFullscreenElement
                 ? document.exitFullscreen()
                 : el.requestFullscreen();
         }
@@ -4060,7 +4108,7 @@ class RoomClient {
     isHtml(str) {
         var a = document.createElement('div');
         a.innerHTML = str;
-        for (var c = a.childNodes, i = c.length; i--; ) {
+        for (var c = a.childNodes, i = c.length; i--;) {
             if (c[i].nodeType == 1) return true;
         }
         return false;
@@ -4069,11 +4117,11 @@ class RoomClient {
     isValidHttpURL(input) {
         const pattern = new RegExp(
             '^(https?:\\/\\/)?' + // protocol
-                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-                '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-                '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-                '(\\#[-a-z\\d_]*)?$',
+            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+            '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+            '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+            '(\\#[-a-z\\d_]*)?$',
             'i',
         ); // fragment locator
         return pattern.test(input);
@@ -4321,8 +4369,8 @@ class RoomClient {
         Swal.fire({
             background: 'white',
             position: 'top',
-            html: 
-            `
+            html:
+                `
             <style>
                 .option-label {
                     transition: background-color 0.3s, color 0.3s;
@@ -4440,10 +4488,10 @@ class RoomClient {
             }
         });
     }
-    
-    
-    
-    
+
+
+
+
 
     startMobileRecording(options, audioMixerTracks) {
         try {
@@ -5509,15 +5557,15 @@ class RoomClient {
             case 'transcriptShowOnMsg':
                 active
                     ? userLog(
-                          'info',
-                          `${icons.transcript} Transcript will be shown, when you receive a message`,
-                          'top-end',
-                      )
+                        'info',
+                        `${icons.transcript} Transcript will be shown, when you receive a message`,
+                        'top-end',
+                    )
                     : userLog(
-                          'info',
-                          `${icons.transcript} Transcript not will be shown, when you receive a message`,
-                          'top-end',
-                      );
+                        'info',
+                        `${icons.transcript} Transcript not will be shown, when you receive a message`,
+                        'top-end',
+                    );
                 break;
             case 'audio_start_muted':
                 this.userLog('info', `${icons.moderator} Moderator: everyone starts muted ${status}`, 'top-end');
@@ -6241,9 +6289,8 @@ class RoomClient {
             switch (action) {
                 case 'ban':
                     if (peerActionAllowed) {
-                        const message = `Will ban you from the room${
-                            msg ? `<br><br><span class="red">Reason: ${msg}</span>` : ''
-                        }`;
+                        const message = `Will ban you from the room${msg ? `<br><br><span class="red">Reason: ${msg}</span>` : ''
+                            }`;
                         this.exit(true);
                         this.sound(action);
                         this.peerActionProgress(from_peer_name, message, 5000, action);
@@ -6251,9 +6298,8 @@ class RoomClient {
                     break;
                 case 'eject':
                     if (peerActionAllowed) {
-                        const message = `Will eject you from the room${
-                            msg ? `<br><br><span class="red">Reason: ${msg}</span>` : ''
-                        }`;
+                        const message = `Will eject you from the room${msg ? `<br><br><span class="red">Reason: ${msg}</span>` : ''
+                            }`;
                         this.exit(true);
                         this.sound(action);
                         this.peerActionProgress(from_peer_name, message, 5000, action);
@@ -6891,30 +6937,30 @@ class RoomClient {
             this.setTippy(
                 id,
                 '<pre>' +
-                    JSON.stringify(
-                        peer_info,
-                        [
-                            'join_data_time',
-                            'peer_id',
-                            'peer_name',
-                            'peer_audio',
-                            'peer_video',
-                            'peer_video_privacy',
-                            'peer_screen',
-                            'peer_hand',
-                            'is_desktop_device',
-                            'is_mobile_device',
-                            'is_tablet_device',
-                            'is_ipad_pro_device',
-                            'os_name',
-                            'os_version',
-                            'browser_name',
-                            'browser_version',
-                            //'user_agent',
-                        ],
-                        2,
-                    ) +
-                    '<pre/>',
+                JSON.stringify(
+                    peer_info,
+                    [
+                        'join_data_time',
+                        'peer_id',
+                        'peer_name',
+                        'peer_audio',
+                        'peer_video',
+                        'peer_video_privacy',
+                        'peer_screen',
+                        'peer_hand',
+                        'is_desktop_device',
+                        'is_mobile_device',
+                        'is_tablet_device',
+                        'is_ipad_pro_device',
+                        'os_name',
+                        'os_version',
+                        'browser_name',
+                        'browser_version',
+                        //'user_agent',
+                    ],
+                    2,
+                ) +
+                '<pre/>',
                 'top-start',
                 true,
             );
@@ -7119,12 +7165,12 @@ class RoomClient {
                             img.setAttribute(
                                 'avatarData',
                                 avatarUi.id +
-                                    '|' +
-                                    avatar.name +
-                                    '|' +
-                                    avatarUi.default_voice.free.voice_id +
-                                    '|' +
-                                    avatarUi.video_url.grey,
+                                '|' +
+                                avatar.name +
+                                '|' +
+                                avatarUi.default_voice.free.voice_id +
+                                '|' +
+                                avatarUi.video_url.grey,
                             );
                             img.onclick = () => {
                                 const avatarImages = document.querySelectorAll('.avatarImg');
