@@ -374,40 +374,35 @@ class RoomClient {
 
     // New method to call your server and check meeting status
     async checkIfInMeeting() {
-        // Save the interval ID to clear it later if needed
-
         // Extract IT, IB, and MeetingID from the URL
         const urlParams = new URLSearchParams(window.location.search);
         const IT = urlParams.get('IT'); // Invited user ID
         const CU = urlParams.get('CU'); // Initiating user ID
         const IB = urlParams.get('IB'); // Initiating user ID
-
+    
         const MI = window.location.pathname.split('/join/')[1]; // Extract MeetingID from the path
-
-        // Save the interval ID to clear it later if needed
-        this.meetingCheckInterval = setInterval(() => {
-            fetch('https://rendezvousbackend.onrender.com/updateleavemeeting', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    IT: CU, // Current user (initiated to)
-                    IB,    // Initiated by (should be set from your context)
-                    MI,    // Meeting ID
-                }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.inMeeting) {
-                        console.warn('You have been removed from the meeting in the database.');
-                        // Call the exitRoom function to disconnect
-                        this.exitRoom();
-                    }
+    
+        // Only proceed if CU and IB are not the same
+        if (CU !== IB) {
+            // Save the interval ID to clear it later if needed
+            this.meetingCheckInterval = setInterval(() => {
+                fetch('https://rendezvousbackend.onrender.com/updateleavemeeting', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        IT: CU, // Current user (initiated to)
+                        IB,    // Initiated by (should be set from your context)
+                        MI,    // Meeting ID
+                    }),
                 })
-                .catch(error => console.error('Error checking meeting status:', error));
-        }, 5000); // Every 5 seconds
+                    .then(response => response.json())
+                    .catch(error => console.error('Error checking meeting status:', error));
+            }, 5000); // Every 5 seconds
+        }
     }
+    
 
     async createRoom(room_id) {
         await this.socket
