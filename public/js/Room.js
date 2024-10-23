@@ -967,6 +967,7 @@ async function whoAreYou() {
             }
     
             const data = await response.json(); // Parse the response as JSON
+            console.log(data.joinStatus)
             return data.joinStatus; // Return the `joinStatus` from the response
         } catch (error) {
             console.error('Error fetching join status:', error);
@@ -1017,7 +1018,7 @@ async function whoAreYou() {
                 joinRoom(peer_name, MI);
             } else {
                 // Else, proceed with the API call
-                const result = await JoinMeetingApi(IT, IB, MI);
+                const result = await JoinMeetingApi(CU, IB, MI);
                 if (result === 1) {
                     // Join the room if the status is 1
                     getPeerInfo();
