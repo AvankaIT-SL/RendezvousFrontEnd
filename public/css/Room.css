@@ -62,6 +62,14 @@
     --btns-width: 320px;
     --btns-flex-direction: row;
    
+    --bottom-btns-top: auto;
+    --bottom-btns-left: 50%;
+    --bottom-btns-bottom: 0;
+    --bottom-btns-translate-X: -50%;
+    --bottom-btns-translate-Y: 0%;
+    --bottom-btns-margin-bottom: 18px;
+    --bottom-btns-flex-direction: row;
+
 
     --transcription-height: 680px;
     --transcription-width: 420px;
@@ -208,7 +216,7 @@ body {
 --------------------------------------------------------------*/
 
 #control {
-    z-index: 3;
+    /* z-index: 3;
     position: absolute;
     display: flex;
     padding: 5px;
@@ -225,27 +233,55 @@ body {
 
     -webkit-transform: translate(0%, -50%);
     -ms-transform: translate(0%, -50%);
-    transform: translate(0%, -50%);
+    transform: translate(0%, -50%); */
 
     /* border: var(--border); */
+    /* border-radius: 10px; */
+
+    z-index: 3;
+    position: fixed;
+    padding: 5px;
+    top: var(--bottom-btns-top);
+    left: var(--bottom-btns-left);
+    bottom: var(--bottom-btns-bottom);
+    transform: translate(var(--bottom-btns-translate-X), var(--bottom-btns-translate-Y));
+    flex-direction: var(--bottom-btns-flex-direction);
+    margin-bottom: var(--bottom-btns-margin-bottom);
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
     border-radius: 10px;
+    border: none !important;
+    /* box-shadow: var(--box-shadow); */
 }
 
 #control button {
-    font-size: 1rem;
+    /* font-size: 1rem;
     padding: 25px;
     transition: all 0.3s ease-in-out;
     background: var(--btns-bg-color);
     border-radius: 20px;
-    color: #ffffff;
+    color: #ffffff; */
     /* border: var(--border); */
     /* box-shadow: var(--box-shadow); */
+    width: 48px;
+    font-size: 1.4rem !important;
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--btns-bg-color);
+    border: none !important;
+    color: #ffffff;
+    transition: all 0.3s ease-in-out;
 }
 
 #control button i {
-    font-size: 1.5rem;
+    font-size: 1.5rem !important;
 }
 
+#control button:hover {
+    transform: var(--btns-hover-scale);
+    background: #393939 !important;
+}
 #exitButton {
     color: red;
 }
