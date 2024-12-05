@@ -133,27 +133,30 @@ access to use this app.
 
         <section>
             <div id="initUser" class="init-user hidden">
+                <hr style="height: 1px; border: none; background-color: #000000 !important; opacity: 1 !important; margin: 0 0 2rem 0 !important;">
                 <!-- <p>Please allow the camera & microphone access to use this app.</p> -->
-                <div id="initVideoContainer" class="init-video-container">
-                    <video
-                        id="initVideo"
-                        playsinline="true"
-                        autoplay=""
-                        class="mirror"
-                        poster="../images/loader.gif"
-                    ></video>
-                </div>
-                <div class="initComands">
-                    <button id="initVideoAudioRefreshButton" class="fas fa-rotate"></button>
-                    <button id="initVideoButton" class="fas fa-video"></button>
-                    <button id="initAudioButton" class="fas fa-microphone"></button>
-                    <button id="initAudioVideoButton" class="fas fa-eye"></button>
-                    <button id="initStartScreenButton" class="fas fa-desktop hidden"></button>
-                    <button id="initStopScreenButton" class="fas fa-stop-circle hidden"></button>
-                    <select id="initVideoSelect" class="form-select bg-dark"></select>
-                    <select id="initMicrophoneSelect" class="form-select bg-dark"></select>
-                    <select id="initSpeakerSelect" class="form-select bg-dark"></select>
-                </div>
+                 <div class="init-content">
+                     <div id="initVideoContainer" class="init-video-container">
+                         <video
+                             id="initVideo"
+                             playsinline="true"
+                             autoplay=""
+                             class="mirror"
+                             poster="../images/loader.gif"
+                         ></video>
+                     </div>
+                     <div class="initComands">
+                         <button id="initVideoAudioRefreshButton" class="fas fa-rotate"></button>
+                         <button id="initVideoButton" class="fas fa-video"></button>
+                         <button id="initAudioButton" class="fas fa-microphone"></button>
+                         <button id="initAudioVideoButton" class="fas fa-eye"></button>
+                         <button id="initStartScreenButton" class="fas fa-desktop hidden"></button>
+                         <button id="initStopScreenButton" class="fas fa-stop-circle hidden"></button>
+                         <select id="initVideoSelect" class="form-select bg-dark"></select>
+                         <select id="initMicrophoneSelect" class="form-select bg-dark"></select>
+                         <select id="initSpeakerSelect" class="form-select bg-dark"></select>
+                     </div>
+                 </div>
             </div>
         </section>
 
@@ -1129,7 +1132,7 @@ access to use this app.
                     <button id="whiteboardObjectBtn" class="fas fa-mouse-pointer"></button>
                     <button id="whiteboardUndoBtn" class="fas fa-undo"></button>
                     <button id="whiteboardRedoBtn" class="fas fa-redo"></button>
-                    <div class="dropdown" style="display: none;">
+                    <div class="dropdown">
                         <button
                             class="dropdown-toggle"
                             type="button"
@@ -1152,7 +1155,7 @@ access to use this app.
                                     width="1em"
                                     height="1em"
                                     viewBox="0 0 24 24"
-                                    fill="#FFFFFF"
+                                    fill="#000000"
                                 >
                                     <path d="M12 5.887l8.468 14.113h-16.936l8.468-14.113zm0-3.887l-12 20h24l-12-20z" />
                                 </svg>

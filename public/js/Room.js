@@ -967,6 +967,7 @@ async function whoAreYou() {
             }
     
             const data = await response.json(); // Parse the response as JSON
+            console.log(data.joinStatus)
             return data.joinStatus; // Return the `joinStatus` from the response
         } catch (error) {
             console.error('Error fetching join status:', error);
@@ -975,35 +976,52 @@ async function whoAreYou() {
     }
     
 
+    async function StartMeetingApi(IT, IB, MI) {
+        try {
+            const response = await fetch(`https://rendezvousbackend.onrender.com/startmeeting`, {
+                method: 'POST', // Set method to POST
+                headers: {
+                    'Content-Type': 'application/json', // Set content type to JSON
+                },
+                body: JSON.stringify({
+                    IT,  // Pass the InitiatedTo parameter
+                    IB,  // Pass the InitiatedBy parameter
+                    MI,  // Pass the MeetingID parameter
+                }),
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+    
+            const data = await response.json(); // Parse the response as JSON
+            console.log(data.joinStatus)
+            return data.joinStatus; // Return the `joinStatus` from the response
+        } catch (error) {
+            console.error('Error fetching join status:', error);
+            return ''; // Return an empty string in case of an error
+        }
+    }
+
     // Initialize SweetAlert2 after fetching the name
     async function showModal() {
         const default_name = await fetchNameByID(CU); // Fetch the name based on ID
+
+        if (!getCookie(room_id + '_name')) {
+            window.localStorage.peer_name = default_name;
+        }
+        setCookie(room_id + '_name', default_name, 30);
+        peer_name = default_name;
 
         Swal.fire({
             allowOutsideClick: false,
             allowEscapeKey: false,
             background: swalBackground,
-            title: BRAND.app.name,
-            input: 'text',
-            inputPlaceholder: 'Enter your name',
-            inputAttributes: { maxlength: 32 },
-            inputValue: default_name, // Use the fetched name as default
+            title: default_name, // Use the fetched name as the title
             html: initUser, // Inject HTML
-            confirmButtonText: `Join meeting`,
-            customClass: { popup: 'init-modal-size' },
+            confirmButtonText: `Join`,
+            customClass: { popup: 'init-modal-size', confirmButton: 'swal2-confirm-button' },
             showClass: { popup: 'animate__animated animate__fadeInDown' },
             hideClass: { popup: 'animate__animated animate__fadeOutUp' },
-            inputValidator: (name) => {
-                if (!name) return 'Please enter your name';
-                if (name.length > 30) return 'Name must be max 30 char';
-                name = filterXSS(name);
-                if (isHtml(name)) return 'Invalid name!';
-                if (!getCookie(room_id + '_name')) {
-                    window.localStorage.peer_name = name;
-                }
-                setCookie(room_id + '_name', name, 30);
-                peer_name = name;
-            },
         }).then(async () => {
             if (initStream && !joinRoomWithScreen) {
                 await stopTracks(initStream);
@@ -1013,11 +1031,23 @@ async function whoAreYou() {
 
             if (CU === IB) {
                 // If CU and IB are the same, bypass the API call and directly join the room
-                getPeerInfo();
-                joinRoom(peer_name, MI);
+
+                const result1 = await StartMeetingApi(IT, IB, MI);
+                if (result1 === 1) {
+                    // Join the room if the status is 1
+                    getPeerInfo();
+                    joinRoom(peer_name, MI);
+                } else {
+                    // Show an error if the join status is not 1
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Unable to join the meeting. Please try again.',
+                    });
+                }
             } else {
                 // Else, proceed with the API call
-                const result = await JoinMeetingApi(IT, IB, MI);
+                const result = await JoinMeetingApi(CU, IB, MI);
                 if (result === 1) {
                     // Join the room if the status is 1
                     getPeerInfo();

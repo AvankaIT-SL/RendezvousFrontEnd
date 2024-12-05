@@ -374,40 +374,35 @@ class RoomClient {
 
     // New method to call your server and check meeting status
     async checkIfInMeeting() {
-        // Save the interval ID to clear it later if needed
-
         // Extract IT, IB, and MeetingID from the URL
         const urlParams = new URLSearchParams(window.location.search);
         const IT = urlParams.get('IT'); // Invited user ID
         const CU = urlParams.get('CU'); // Initiating user ID
         const IB = urlParams.get('IB'); // Initiating user ID
-
+    
         const MI = window.location.pathname.split('/join/')[1]; // Extract MeetingID from the path
-
-        // Save the interval ID to clear it later if needed
-        this.meetingCheckInterval = setInterval(() => {
-            fetch('https://rendezvousbackend.onrender.com/updateleavemeeting', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    IT: CU, // Current user (initiated to)
-                    IB,    // Initiated by (should be set from your context)
-                    MI,    // Meeting ID
-                }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.inMeeting) {
-                        console.warn('You have been removed from the meeting in the database.');
-                        // Call the exitRoom function to disconnect
-                        this.exitRoom();
-                    }
+    
+        // Only proceed if CU and IB are not the same
+        if (CU !== IB) {
+            // Save the interval ID to clear it later if needed
+            this.meetingCheckInterval = setInterval(() => {
+                fetch('https://rendezvousbackend.onrender.com/updateleavemeeting', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        IT: CU, // Current user (initiated to)
+                        IB,    // Initiated by (should be set from your context)
+                        MI,    // Meeting ID
+                    }),
                 })
-                .catch(error => console.error('Error checking meeting status:', error));
-        }, 5000); // Every 5 seconds
+                    .then(response => response.json())
+                    .catch(error => console.error('Error checking meeting status:', error));
+            }, 5000); // Every 5 seconds
+        }
     }
+    
 
     async createRoom(room_id) {
         await this.socket
@@ -1822,9 +1817,9 @@ class RoomClient {
                 vb = document.createElement('div');
                 vb.setAttribute('id', this.peer_id + '__vb');
                 vb.className = 'videoMenuBar fadein';
-                pip = document.createElement('button');
-                pip.id = id + '__pictureInPicture';
-                pip.className = html.pip;
+                // pip = document.createElement('button');
+                // pip.id = id + '__pictureInPicture';
+                // pip.className = html.pip;
                 fs = document.createElement('button');
                 fs.id = id + '__fullScreen';
                 fs.className = html.fullScreen;
@@ -1859,9 +1854,9 @@ class RoomClient {
                 BUTTONS.producerVideo.muteAudioButton && vb.appendChild(au);
                 BUTTONS.producerVideo.videoPrivacyButton && !isScreen && vb.appendChild(vp);
                 BUTTONS.producerVideo.snapShotButton && vb.appendChild(ts);
-                BUTTONS.producerVideo.videoPictureInPicture &&
-                    this.isVideoPictureInPictureSupported &&
-                    vb.appendChild(pip);
+                // BUTTONS.producerVideo.videoPictureInPicture &&
+                //     this.isVideoPictureInPictureSupported &&
+                //     vb.appendChild(pip);
                 BUTTONS.producerVideo.fullScreenButton && this.isVideoFullScreenSupported && vb.appendChild(fs);
                 if (!this.isMobileDevice) vb.appendChild(pn);
                 d.appendChild(elem);
@@ -1872,7 +1867,7 @@ class RoomClient {
                 this.videoMediaContainer.appendChild(d);
                 this.attachMediaStream(elem, stream, type, 'Producer');
                 this.myVideoEl = elem;
-                this.isVideoPictureInPictureSupported && this.handlePIP(elem.id, pip.id);
+                // this.isVideoPictureInPictureSupported && this.handlePIP(elem.id, pip.id);
                 this.isVideoFullScreenSupported && this.handleFS(elem.id, fs.id);
                 this.handleDD(elem.id, this.peer_id, true);
                 this.handleTS(elem.id, ts.id);
@@ -1885,7 +1880,7 @@ class RoomClient {
                 handleAspectRatio();
                 if (!this.isMobileDevice) {
                     this.setTippy(pn.id, 'Toggle Pin', 'bottom');
-                    this.setTippy(pip.id, 'Toggle picture in picture', 'bottom');
+                    // this.setTippy(pip.id, 'Toggle picture in picture', 'bottom');
                     this.setTippy(ts.id, 'Snapshot', 'bottom');
                     this.setTippy(vp.id, 'Toggle video privacy', 'bottom');
                     this.setTippy(au.id, 'Audio status', 'bottom');
@@ -2223,9 +2218,9 @@ class RoomClient {
                 pv.min = 0;
                 pv.max = 100;
                 pv.value = 100;
-                pip = document.createElement('button');
-                pip.id = id + '__pictureInPicture';
-                pip.className = html.pip;
+                // pip = document.createElement('button');
+                // pip.id = id + '__pictureInPicture';
+                // pip.className = html.pip;
                 fs = document.createElement('button');
                 fs.id = id + '__fullScreen';
                 fs.className = html.fullScreen;
@@ -2241,9 +2236,9 @@ class RoomClient {
                 sm = document.createElement('button');
                 sm.id = id + '___' + remotePeerId + '___sendMsg';
                 sm.className = html.sendMsg;
-                sv = document.createElement('button');
-                sv.id = id + '___' + remotePeerId + '___sendVideo';
-                sv.className = html.sendVideo;
+                // sv = document.createElement('button');
+                // sv.id = id + '___' + remotePeerId + '___sendVideo';
+                // sv.className = html.sendVideo;
                 cm = document.createElement('button');
                 cm.id = id + '___' + remotePeerId + '___video';
                 cm.className = html.videoOn;
@@ -2277,7 +2272,7 @@ class RoomClient {
 
                 BUTTONS.consumerVideo.sendMessageButton && eVc.appendChild(sm);
                 BUTTONS.consumerVideo.sendFileButton && eVc.appendChild(sf);
-                BUTTONS.consumerVideo.sendVideoButton && eVc.appendChild(sv);
+                // BUTTONS.consumerVideo.sendVideoButton && eVc.appendChild(sv);
                 BUTTONS.consumerVideo.geolocationButton && eVc.appendChild(gl);
                 BUTTONS.consumerVideo.banButton && eVc.appendChild(ban);
                 BUTTONS.consumerVideo.ejectButton && eVc.appendChild(ko);
@@ -2289,9 +2284,9 @@ class RoomClient {
                 vb.appendChild(au);
                 vb.appendChild(cm);
                 BUTTONS.consumerVideo.snapShotButton && vb.appendChild(ts);
-                BUTTONS.consumerVideo.videoPictureInPicture &&
-                    this.isVideoPictureInPictureSupported &&
-                    vb.appendChild(pip);
+                // BUTTONS.consumerVideo.videoPictureInPicture &&
+                //     this.isVideoPictureInPictureSupported &&
+                //     vb.appendChild(pip);
                 BUTTONS.consumerVideo.fullScreenButton && this.isVideoFullScreenSupported && vb.appendChild(fs);
                 if (!this.isMobileDevice) vb.appendChild(pn);
                 d.appendChild(elem);
@@ -2307,7 +2302,7 @@ class RoomClient {
                 this.handleTS(elem.id, ts.id);
                 this.handleSF(sf.id);
                 this.handleSM(sm.id, peer_name);
-                this.handleSV(sv.id);
+                // this.handleSV(sv.id);
                 BUTTONS.consumerVideo.muteVideoButton && this.handleCM(cm.id);
                 BUTTONS.consumerVideo.muteAudioButton && this.handleAU(au.id);
                 this.handlePV(id + '___' + pv.id);
@@ -2325,11 +2320,11 @@ class RoomClient {
                 console.log('[addConsumer] Video-element-count', this.videoMediaContainer.childElementCount);
                 if (!this.isMobileDevice) {
                     this.setTippy(pn.id, 'Toggle Pin', 'bottom');
-                    this.setTippy(pip.id, 'Toggle picture in picture', 'bottom');
+                    // this.setTippy(pip.id, 'Toggle picture in picture', 'bottom');
                     this.setTippy(ts.id, 'Snapshot', 'bottom');
                     this.setTippy(sf.id, 'Send file', 'bottom');
                     this.setTippy(sm.id, 'Send message', 'bottom');
-                    this.setTippy(sv.id, 'Send video', 'bottom');
+                    // this.setTippy(sv.id, 'Send video', 'bottom');
                     this.setTippy(cm.id, 'Hide', 'bottom');
                     this.setTippy(au.id, 'Mute', 'bottom');
                     this.setTippy(pv.id, '🔊 Volume', 'bottom');
@@ -2448,9 +2443,9 @@ class RoomClient {
             sm = document.createElement('button');
             sm.id = 'remotePeer___' + peer_id + '___sendMsg';
             sm.className = html.sendMsg;
-            sv = document.createElement('button');
-            sv.id = 'remotePeer___' + peer_id + '___sendVideo';
-            sv.className = html.sendVideo;
+            // sv = document.createElement('button');
+            // sv.id = 'remotePeer___' + peer_id + '___sendVideo';
+            // sv.className = html.sendVideo;
             gl = document.createElement('button');
             gl.id = 'remotePeer___' + peer_id + '___geoLocation';
             gl.className = html.geolocation;
@@ -2483,7 +2478,7 @@ class RoomClient {
             BUTTONS.videoOff.ejectButton && vb.appendChild(ko);
             BUTTONS.videoOff.banButton && vb.appendChild(ban);
             BUTTONS.videoOff.geolocationButton && vb.appendChild(gl);
-            BUTTONS.videoOff.sendVideoButton && vb.appendChild(sv);
+            // BUTTONS.videoOff.sendVideoButton && vb.appendChild(sv);
             BUTTONS.videoOff.sendFileButton && vb.appendChild(sf);
             BUTTONS.videoOff.sendMessageButton && vb.appendChild(sm);
             BUTTONS.videoOff.audioVolumeInput && !this.isMobileDevice && vb.appendChild(pv);
@@ -2500,7 +2495,7 @@ class RoomClient {
             this.handlePV('remotePeer___' + pv.id);
             this.handleSM(sm.id);
             this.handleSF(sf.id);
-            this.handleSV(sv.id);
+            // this.handleSV(sv.id);
             this.handleGL(gl.id);
             this.handleBAN(ban.id);
             this.handleKO(ko.id);
@@ -2514,7 +2509,7 @@ class RoomClient {
         if (!this.isMobileDevice && remotePeer) {
             this.setTippy(sm.id, 'Send message', 'bottom');
             this.setTippy(sf.id, 'Send file', 'bottom');
-            this.setTippy(sv.id, 'Send video', 'bottom');
+            // this.setTippy(sv.id, 'Send video', 'bottom');
             this.setTippy(au.id, 'Mute', 'bottom');
             this.setTippy(pv.id, '🔊 Volume', 'bottom');
             this.setTippy(gl.id, 'Geolocation', 'bottom');
